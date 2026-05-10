@@ -1,12 +1,14 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from maths import *
+import math
 
 app = Flask(__name__)
-
-
 CORS(app)
 
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 @app.route("/add")
 def add():
@@ -52,22 +54,19 @@ def sqrt():
 
 @app.route("/calc")
 def calc():
-    expression = request.args.get("expression")
+    expression = request.args.get("expression", "")
 
     try:
-        if not expression:
-            return jsonify(result=None, error="Empty expression")
+        expression = expression.strip()
 
-        expression = expression.replace("×", "*").replace("÷", "/")
+        if not expression:
+            return jsonify(error="Empty expression", result=None)
 
         result = eval(expression)
-
         return jsonify(result=result)
 
-    except Exception as e:
-        print("ERROR:", e)
-        return jsonify(result=None, error="Invalid expression")
-
+    except:
+        return jsonify(error="Invalid expression", result=None)
 
 if __name__ == "__main__":
     app.run(debug=True)
