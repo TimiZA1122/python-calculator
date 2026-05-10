@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+
+body {
+    font-family: Arial;
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+    background: #f4f4f4;
+}
+
+.calculator {
+    width: 280px;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+#display {
+    width: 90%;
+    height: 45px;
+    font-size: 22px;
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+}
+
+button {
+    padding: 15px;
+    font-size: 18px;
+}
+
+.equal {
+    grid-column: span 4;
+    background: green;
+    color: white;
+}
+
+.clear {
+    grid-column: span 4;
+    background: red;
+    color: white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+
+    <input id="display" disabled>
+
+    <div class="buttons">
+
+        <button onclick="press('7')">7</button>
+        <button onclick="press('8')">8</button>
+        <button onclick="press('9')">9</button>
+        <button onclick="press('/')">÷</button>
+
+        <button onclick="press('4')">4</button>
+        <button onclick="press('5')">5</button>
+        <button onclick="press('6')">6</button>
+        <button onclick="press('*')">×</button>
+
+        <button onclick="press('1')">1</button>
+        <button onclick="press('2')">2</button>
+        <button onclick="press('3')">3</button>
+        <button onclick="press('-')">-</button>
+
+        <button onclick="press('0')">0</button>
+        <button onclick="press('.')">.</button>
+        <button onclick="squareRoot()">√</button>
+        <button onclick="press('+')">+</button>
+
+        <button class="equal" onclick="calculate()">=</button>
+        <button class="clear" onclick="clearDisplay()">C</button>
+
+    </div>
+
+</div>
+
+<script>
+
+let expression = "";
+
+
+/* =========================
+   ADD VALUES TO SCREEN
+========================= */
+function press(value) {
+
+    expression += value;
+
+    document.getElementById("display").value = expression;
+}
+
+
+/* =========================
+   CLEAR SCREEN
+========================= */
+function clearDisplay() {
+
+    expression = "";
+
+    document.getElementById("display").value = "";
+}
+
+
+/* =========================
+   EQUALS BUTTON
+========================= */
+function calculate() {
+
+    let fixedExpression = expression
+        .replaceAll("×", "*")
+        .replaceAll("÷", "/");
+
+
+    console.log("SENDING:", fixedExpression);
+
+
+    fetch(
+        "http://127.0.0.1:5000/calc?expression="
+        + encodeURIComponent(fixedExpression)
+    )
+
+    .then(function(response) {
+
+        console.log("RAW RESPONSE:", response);
+
+        return response.json();
+    })
+
+    .then(function(data) {
+
+        console.log("DATA:", data);
+
+        if (data.error) {
+
+            alert(data.error);
+
+            return;
+        }
+
+        expression = String(data.result);
+
+        document.getElementById("display").value = data.result;
+    })
+
+    .catch(function(error) {
+
+        console.log("FETCH ERROR:", error);
+
+        alert("Something failed. Check console.");
+    });
+}
+
+
+/* =========================
+   SQUARE ROOT
+========================= */
+function squareRoot() {
+
+    fetch(
+        "http://127.0.0.1:5000/square-root?a="
+        + expression
+    )
+
+    .then(function(response) {
+
+        return response.json();
+    })
+
+    .then(function(data) {
+
+        if (data.error) {
+
+            alert(data.error);
+
+            return;
+        }
+
+        expression = String(data.result);
+
+        document.getElementById("display").value = data.result;
+    })
+
+    .catch(function(error) {
+
+        console.log(error);
+
+        alert("Square root failed");
+    });
+}
+
+</script>
+
+</body>
+</html>
